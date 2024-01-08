@@ -1,19 +1,18 @@
 from river import metrics
-from river.stream import iter_pandas
 from river.neighbors import KNNRegressor
 from kafka import KafkaConsumer
 import json
 import os
 import csv
 
-from parameter import crypto_symbol, historical_topic, crypto_name, topic_to_use
+from parameter import crypto_symbol, topic, crypto_name
 from process_message import process_kafka_message_to_model
 
 ###############################################
 
 # Create a consumer instance
 consumer = KafkaConsumer(
-    topic_to_use,
+    topic,
     bootstrap_servers='localhost:9092',
      
 )
@@ -35,6 +34,8 @@ for message in consumer:
     decoded_message = message.value.decode('utf-8')
     data = json.loads(decoded_message)
 
+    #check if the directory exists, if no, create it, 
+    #then if the csv file exists, remove previous data
     csv_file_path = f'./Metrics/{knn.__class__.__name__}_metrics.csv'
     if counter == 0:
         directory = os.path.dirname(csv_file_path)

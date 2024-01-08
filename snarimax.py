@@ -1,21 +1,13 @@
-
-from river import datasets
 from river import metrics
 from river import time_series
 from kafka import KafkaConsumer
 import json
-from datetime import datetime
-from river import preprocessing
 from river import linear_model
 from river import optim
-import calendar
-import datetime as dt
-import math
-from river import compose
 import os
 import csv
 
-from parameter import crypto_symbol, historical_topic, crypto_name
+from parameter import crypto_symbol, topic, crypto_name
 
 def process_kafka_message_to_model(message, model, metrics,csv_file_path, print_progress=False):
     decoded_message = message.value.decode('utf-8')
@@ -35,7 +27,6 @@ def process_kafka_message_to_model(message, model, metrics,csv_file_path, print_
 
     # Check if it's time to print progress
     if print_progress:
-
         print(model)
         print(metrics,'\n')
     
@@ -43,7 +34,6 @@ def process_kafka_message_to_model(message, model, metrics,csv_file_path, print_
     model.learn_one(y)
 
     new_data = [model.__class__.__name__,date, metrics[0].get(), metrics[1].get(), metrics[2].get()]
-    # print(new_data)
 
     with open(csv_file_path, mode='a', newline='') as csv_file:
         # Create a CSV writer object
@@ -55,7 +45,7 @@ def process_kafka_message_to_model(message, model, metrics,csv_file_path, print_
 
 # Create a consumer instance
 consumer = KafkaConsumer(
-    historical_topic,
+    topic,
     bootstrap_servers='localhost:9092',
      
 )
@@ -70,8 +60,6 @@ metrics_list = [ rmse, mae, smape]
 counter=0
 n_wait=5
 is_print= False
-
-HoltWinters_model = time_series.HoltWinters(alpha=0.3)
 
 model = (
         time_series.SNARIMAX(
