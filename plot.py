@@ -1,20 +1,13 @@
-
-import locale
 from kafka import KafkaConsumer
 import json
 from datetime import datetime
-from pprint import pprint
 import pandas as pd
 import matplotlib.pyplot as plt
-from parameter import crypto_symbol, historical_topic, crypto_name
+from parameter import crypto_symbol, topic, crypto_name
 
 # Create a consumer instance
 consumer = KafkaConsumer(
-    historical_topic,
-    bootstrap_servers='localhost:9092',
-)
-consumer2 = KafkaConsumer(
-    'historical-LTC-USD-topic',
+    topic,
     bootstrap_servers='localhost:9092',
 )
 
@@ -38,7 +31,7 @@ def plot_time_series(message,  name_crypto, window_size=10):
     plt.clf()
 
     # Plot the Bitcoin prices and moving average over time
-    plt.plot(df['Timestamp'], df['Price'], label='Bitcoin Price')
+    plt.plot(df['Timestamp'], df['Price'], label=f'{crypto_name} Price')
     plt.plot(df['Timestamp'], df['MA'], label=f'Moving Average ({window_size} days)')
     plt.xlabel('Time')
     plt.ylabel(f'{name_crypto} Price (USD)')
@@ -53,9 +46,8 @@ def plot_time_series(message,  name_crypto, window_size=10):
     plt.pause(0.001)
 
 
-
 # Start consuming
-for message in consumer2:
+for message in consumer:
     decoded_message = message.value.decode('utf-8')
     data = json.loads(decoded_message)
 
